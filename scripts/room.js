@@ -20,10 +20,11 @@ let roomInfo;
 let mainElements = document.querySelectorAll("body > main");
 
 /// Getting lobby elements
-let [lobbyRoomName, lobbyRoomCode, startButton, startInfoBox, currentPlayerNameHTML, hitPointsHTML, woodAmountHTML, ammoAmountHTML, hasGunHTML, gameCanvas, endScreenMessage1, endScreenMessage2] = ["lobbyRoomName", "lobbyRoomCode", "startButton", "startInfoBox", "currentPlayerName", "hitPoints", "woodAmount", "ammoAmount", "hasGun", "gameCanvas", "endScreenMessage1", "endScreenMessage2"].map(item => document.getElementById(item));
+let [lobbyRoomName, lobbyRoomCode, startButton, startInfoBox, currentPlayerNameHTML, hitPointsHTML, woodAmountHTML, ammoAmountHTML, hasGunHTML, gameCanvas, endScreenMessage1, endScreenMessage2, playerList] = ["lobbyRoomName", "lobbyRoomCode", "startButton", "startInfoBox", "currentPlayerName", "hitPoints", "woodAmount", "ammoAmount", "hasGun", "gameCanvas", "endScreenMessage1", "endScreenMessage2", "playerList"].map(item => document.getElementById(item));
+console.log(playerList);
 
 /// Getting resources
-let [GRASS_TEXTURE, STORM_TEXTURE, WOOD_TEXTURE, AMMO_TEXTURE, GUN_TEXTURE] = ["grass.png", "storm.png", "wood.svg", "ammo.svg", "gun.svg"].map(item => getResource(item));
+let [GRASS_TEXTURE, SAND_TEXTURE, STORM_TEXTURE, WOOD_TEXTURE, CACTUS_TEXTURE, AMMO_TEXTURE, GUN_TEXTURE] = ["grass.png", "sand.png", "storm.png", "wood.svg", "cactus.svg", "ammo.svg", "gun.svg"].map(item => getResource(item));
 
 /// Getting Canvas 2D Rendering Context
 const ctx = gameCanvas.getContext("2d");
@@ -62,10 +63,11 @@ window.addEventListener("resize", (ev) => {
         for (let i = 0; i < roomInfo.mapSize; i++) {
             for (let j = 0; j < roomInfo.mapSize; j++) {
                 currentTile = roomInfo.game.map[`${i},${j}`];
-                ctx.drawImage(GRASS_TEXTURE, i, j, 1, 1);
+                ctx.drawImage((roomInfo.game.biomeMap[i][j] <= 0 ? GRASS_TEXTURE : SAND_TEXTURE), i, j, 1, 1);
+                
 
                 if (currentTile.hasWood) {
-                    ctx.drawImage(WOOD_TEXTURE, i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
+                    ctx.drawImage((roomInfo.game.biomeMap[i][j] <= 0 ? WOOD_TEXTURE : CACTUS_TEXTURE), i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
                 }
                 if (currentTile.hasAmmo) {
                     ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
@@ -228,7 +230,18 @@ socket.on("acceptJoinRoom", (roomJsonData, newSocketId) => {
 
     console.log((socketId === roomJsonData.host ? "block" : "none"));
 
-    document.querySelector("main.lobby > button#startButton").style.display = (socketId === roomJsonData.host && roomJsonData.inRoom.length > 1 ? "block" : "none");
+    document.querySelector("main.lobby > section.roomInfo  > button#startButton").style.display = (socketId === roomJsonData.host && roomJsonData.inRoom.length > 1 ? "block" : "none");
+
+    // Update player list
+    playerList.innerHTML = "";
+
+    Object.values(roomJsonData.usernames).forEach(item => {
+        let playerNameTextNode = document.createTextNode(item);
+        let paragraphElement = document.createElement("p");
+        paragraphElement.appendChild(playerNameTextNode);
+
+        playerList.appendChild(paragraphElement);
+    });
 });
 
 // Room Update
@@ -241,7 +254,18 @@ socket.on("updateRoom", (roomJsonData) => {
 
     console.log(`UPDATED - ${socketId}`);
 
-    document.querySelector("main.lobby > button#startButton").style.display = (socketId === roomJsonData.host && roomJsonData.inRoom.length > 1 ? "block" : "none");
+    document.querySelector("main.lobby > section.roomInfo > button#startButton").style.display = (socketId === roomJsonData.host && roomJsonData.inRoom.length > 1 ? "block" : "none");
+
+    // Update player list
+    playerList.innerHTML = "";
+
+    Object.values(roomJsonData.usernames).forEach(item => {
+        let playerNameTextNode = document.createTextNode(item);
+        let paragraphElement = document.createElement("p");
+        paragraphElement.appendChild(playerNameTextNode);
+
+        playerList.appendChild(paragraphElement);
+    });
 
     // User is currently playing, update game info
     if (roomJsonData.inGame.includes(socketId)) {
@@ -274,10 +298,11 @@ socket.on("updateRoom", (roomJsonData) => {
         for (let i = 0; i < roomJsonData.mapSize; i++) {
             for (let j = 0; j < roomJsonData.mapSize; j++) {
                 currentTile = roomJsonData.game.map[`${i},${j}`];
-                ctx.drawImage(GRASS_TEXTURE, i, j, 1, 1);
+                ctx.drawImage((roomJsonData.game.biomeMap[i][j] <= 0 ? GRASS_TEXTURE : SAND_TEXTURE), i, j, 1, 1);
+                
 
                 if (currentTile.hasWood) {
-                    ctx.drawImage(WOOD_TEXTURE, i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
+                    ctx.drawImage((roomJsonData.game.biomeMap[i][j] <= 0 ? WOOD_TEXTURE : CACTUS_TEXTURE), i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
                 }
                 if (currentTile.hasAmmo) {
                     ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);

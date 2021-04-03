@@ -73,6 +73,68 @@ function getStormDistance(transitionMap, currentDoubleTurn) {
     return 0;
 }
 
+//// Perlin Noise Generator
+
+function generateGridGradient(size, vectorValues = [[-1,-1],[-1,1],[1,-1],[1,1]])
+{
+    let gradientGrid=[];
+    for(let i = 0; i < size; i++)
+    {
+        gradientGrid.push([]);
+        for(let j = 0; j < size; j++)
+        {
+            gradientGrid[i].push(vectorValues[Math.floor(Math.random()*vectorValues.length)]);
+        }
+    }
+    return gradientGrid;
+}
+
+function dot(vec1, vec2)
+{
+    if(vec1.length!==vec2.length)
+    {
+        return 0;
+    }
+    else
+    {
+        let sum = 0;
+        for(let i = 0; i < vec1.length; i++)
+        {
+            sum += vec1[i]*vec2[i];
+        }
+        return sum;
+    }
+}
+
+function lerp(val1, val2, midVal)
+{
+    return (val2 - val1) * (3.0 - midVal * 2.0) * midVal * midVal + val1;
+
+    //return return (val2-val1) * midVal + val1; (normal)
+    //return (val2 - val1) * (3.0 - midVal * 2.0) * midVal * midVal + val1; (smooth)
+}
+
+function generateNoiseGrid(size, sizeGridGradient, sizeGridGradientScaling)
+{
+    let noiseGrid = [...new Array(size)].map(item => [...new Array(size)]);
+    let gradientGrid = generateGridGradient(sizeGridGradient);
+
+    for(let y = 0; y < size; y++)
+    {
+        for(let x = 0; x < size; x++)
+        {
+            let gridVectorIndices = [Math.floor(x / sizeGridGradientScaling), Math.floor(y / sizeGridGradientScaling)];
+            let fracX = (x % sizeGridGradientScaling) / sizeGridGradientScaling;
+            let fracY = (y % sizeGridGradientScaling) / sizeGridGradientScaling;
+            let distanceVectors = [[gridVectorIndices[0] - x / sizeGridGradientScaling, gridVectorIndices[1] - y / sizeGridGradientScaling], [gridVectorIndices[0] + 1 - x / sizeGridGradientScaling, gridVectorIndices[1] - y / sizeGridGradientScaling], [gridVectorIndices[0] - x / sizeGridGradientScaling, gridVectorIndices[1] + 1 - y / sizeGridGradientScaling], [gridVectorIndices[0] + 1 - x / sizeGridGradientScaling, gridVectorIndices[1] + 1 - y / sizeGridGradientScaling]];
+            let dotGradients = [...new Array(4)].map((_,index) => dot(distanceVectors[index], gradientGrid[gridVectorIndices[0] + index % 2][gridVectorIndices[1] + Math.floor(index / 2)] ));
+            noiseGrid[x][y] = lerp(lerp(dotGradients[0], dotGradients[1], fracX), lerp(dotGradients[2], dotGradients[3], fracX), fracY)
+        }
+    }
+
+    return noiseGrid;
+}
+
 // Setting up Routes
 app.use(express.static(`${__dirname}/docs`));
 
@@ -228,8 +290,8 @@ io.on("connection", (socket) => {
         console.log(`Client ${socket.id} joined ${roomCode}`);
         socket.roomCode = roomCode;
         readFile(`rooms/${roomCode}.json`, { encoding: "utf-8" }, (err, data) => {
-            if (err != null) {
-                console.log(err);
+            if (err || ![...data].toString().trim()) {
+                console.log("join error");
             }
             else {
                 jsonData = JSON.parse(data);
@@ -267,8 +329,8 @@ io.on("connection", (socket) => {
 
     socket.on("requestStartGame", (roomCode, reqSocketId) => {
         readFile(`rooms/${roomCode}.json`, (err, data) => {
-            if (err) {
-                console.log(err);
+            if (err || ![...data].toString().trim()) {
+                console.log("start error");
             }
             else {
                 jsonData = JSON.parse(data);
@@ -295,7 +357,8 @@ io.on("connection", (socket) => {
                         ],
                         walls: [
                             
-                        ]
+                        ],
+                        biomeMap: generateNoiseGrid(jsonData.mapSize, jsonData.mapSize / 10, 20)
                     };
 
                     jsonData.inGame.forEach(id => {
@@ -338,7 +401,7 @@ io.on("connection", (socket) => {
                     }
 
                     // Generating guns
-                    let totalGunAmount = jsonData.inGame.length;
+                    let totalGunAmount = Math.max(jsonData.inGame.length, Math.floor(jsonData.mapSize * jsonData.mapSize / 100));
                     let totalGunsPlaced = 0;
                     while (totalGunsPlaced < totalGunAmount) {
                         let posX = Math.floor(Math.random() * jsonData.mapSize);
@@ -428,8 +491,8 @@ io.on("connection", (socket) => {
 
     socket.on("move", (posX, posY, heading) => {
         readFile(`rooms/${socket.roomCode}.json`, { encoding: "utf-8" }, (err, data) => {
-            if (err) {
-                console.log(err);
+            if (err || ![...data].toString().trim()) {
+                console.log("move error");
             }
             else {
                 let jsonData = JSON.parse(data);
@@ -601,8 +664,8 @@ io.on("connection", (socket) => {
 
     socket.on("skip", () => {
         readFile(`rooms/${socket.roomCode}.json`, { encoding: "utf-8" }, (err, data) => {
-            if (err) {
-                console.log(err);
+            if (err || ![...data].toString().trim()) {
+                console.log("skip error");
             }
             else {
                 let jsonData = JSON.parse(data);
@@ -743,16 +806,17 @@ io.on("connection", (socket) => {
 
     socket.on("turn", (newDirection) => {
         readFile(`rooms/${socket.roomCode}.json`, { encoding: "utf-8" }, (err, data) => {
-            if (err) {
-                console.log(err);
+            if (err || ![...data].toString().trim()) {
+                console.log("turn error");
             }
             else {
                 jsonData = JSON.parse(data);
+                console.log(newDirection);
 
                 // Update Heading
                 jsonData.game.status[socket.id].facing = newDirection;
 
-                console.log(`${socket.id} is now facing towards ${newDirection}`);
+                //console.log(`${socket.id} is now facing towards ${newDirection}`);
 
                 // Update File
                 writeFile(`rooms/${socket.roomCode}.json`, JSON.stringify(jsonData), (err) => {
@@ -769,8 +833,8 @@ io.on("connection", (socket) => {
 
     socket.on("shoot", (posX, posY, heading) => {
         readFile(`rooms/${socket.roomCode}.json`, { encoding: "utf-8" }, (err, data) => {
-            if (err) {
-                console.log(err);
+            if (err || ![...data].toString().trim()) {
+                console.log("shoot error");
             }
             else {
                 let jsonData = JSON.parse(data);
@@ -917,9 +981,9 @@ io.on("connection", (socket) => {
 
     socket.on("build", (posX1, posY1, posX2, posY2) => {
         readFile(`rooms/${socket.roomCode}.json`, {encoding: "utf-8"}, (err, data) => {
-            if(err)
+            if(err || ![...data].toString().trim())
             {
-                console.log(err);
+                console.log("build error");
             }
             else
             {
@@ -1070,8 +1134,8 @@ io.on("connection", (socket) => {
         // Checking to see if the client has joined a room
         if (typeof socket.roomCode !== "undefined") {
             readFile(`rooms/${socket.roomCode}.json`, { encoding: "utf-8" }, (err, data) => {
-                if (err) {
-                    console.log(err);
+                if (err || ![...data].toString().trim()) {
+                    console.log("disconnecting error");
                 }
                 else {
                     let jsonData = JSON.parse(data);

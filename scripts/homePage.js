@@ -46,9 +46,31 @@ roomJoinButton.addEventListener("click", _=>{
 });
 
 roomCreateButton.addEventListener("click", _=>{
+    // Clip Map Size
+    if( +mapSize.value < 10 )
+    {
+        mapSize.value = 10;
+    }
+    else if( +mapSize.value > 100 )
+    {
+        mapSize.value = 100;
+    }
+
     console.log(`Name: ${roomCreateUsername.value}`);
     localStorage.setItem("username", roomCreateUsername.value || localStorage.getItem("username") || "Player");
     socket.emit("createRoom", roomName.value || "New Room", +mapSize.value || 10);
+})
+
+// Make mapSize at least 10 and at most 100
+mapSize.addEventListener("change", (ev) => {
+    if( +mapSize.value < 10 )
+    {
+        mapSize.value = 10;
+    }
+    else if( +mapSize.value > 100 )
+    {
+        mapSize.value = 100;
+    }
 })
 
 socket.on("redirectToRoom", (roomCode) => {

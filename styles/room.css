@@ -64,43 +64,52 @@ body > div.window > main
 main.lobby
 {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
 }
 
-main.lobby > *
+main.lobby > section.roomInfo
 {
-    max-width: 80vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 80vw;
 }
 
-main.lobby > image.logo
+section.roomInfo > *
+{
+    max-width: 70vw;
+}
+
+section.roomInfo > image.logo
 {
     width: 10vh;
     height: 10vh;
 }
 
-main.lobby > h1#lobbyRoomName
+section.roomInfo > h1#lobbyRoomName
 {
     font-size: 3vw;
 }
 
-main.lobby > p
+section.roomInfo > p
 {
     font-family: 'Lexend', sans-serif;
 }
 
-main.lobby > p#lobbyRoomCode
+section.roomInfo > p#lobbyRoomCode
 {
     font-size: 2vw;
 }
 
-main.lobby > p#startInfoBox
+section.roomInfo > p#startInfoBox
 {
     font-size: 1.5vw;
 }
 
-main.lobby > button#startButton
+section.roomInfo > button#startButton
 {
     background-color: var(--primary-color);
     background-clip: border-box;
@@ -118,13 +127,47 @@ main.lobby > button#startButton
     display: none;
 }
 
-main.lobby > button#startButton:focus
+section.roomInfo > button#startButton:focus
 {
     outline: none;
     border-right: 0.4vw solid rgba(0,0,0,0.5);
     border-bottom: 0.4vw solid rgba(0,0,0,0.5);
     border-top: 0.4vw solid rgba(255, 255, 255, 0);
     border-left: 0.4vw solid rgba(255,255,255,0);
+}
+
+main.lobby > section.playerInfo
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    width: 20vw;
+    align-self: start;
+    background-color: black;
+    color: white;
+    height: 100vh;
+    max-height: 100vh;
+}
+
+section.playerInfo > h1
+{
+    font-family: 'Josefin Sans', sans-serif;
+}
+
+section.playerInfo > div#playerList
+{
+    font-family: 'Lexend', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+}
+
+div#playerList > p
+{
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }
 
 main.game
