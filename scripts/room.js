@@ -31,6 +31,8 @@ const ctx = gameCanvas.getContext("2d");
 
 const CANVAS_SCALING = 720;
 
+const TILES_SEEN = 3;
+
 ctx.canvas.width = 0.8 * CANVAS_SCALING * window.innerWidth / window.innerHeight;
 ctx.canvas.height = CANVAS_SCALING;
 
@@ -42,8 +44,8 @@ ctx.clearAll = () => {
     ctx.restore();
 };
 
-ctx.scale(CANVAS_SCALING / 5, CANVAS_SCALING / 5);
-ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / 5), ctx.canvas.height / 2 / (CANVAS_SCALING / 5));
+ctx.scale(CANVAS_SCALING / TILES_SEEN, CANVAS_SCALING / TILES_SEEN);
+ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / TILES_SEEN), ctx.canvas.height / 2 / (CANVAS_SCALING / TILES_SEEN));
 
 window.addEventListener("resize", (ev) => {
     if (roomInfo?.inGame?.includes(socketId || "") && roomInfo?.state === "Game") {
@@ -54,8 +56,8 @@ window.addEventListener("resize", (ev) => {
 
         //ctx.clearAll();
 
-        ctx.scale(CANVAS_SCALING / 5, CANVAS_SCALING / 5);
-        ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / 5) - roomInfo.game.status[socketId].x - 0.5, ctx.canvas.height / 2 / (CANVAS_SCALING / 5) - roomInfo.game.status[socketId].y - 0.5);
+        ctx.scale(CANVAS_SCALING / TILES_SEEN, CANVAS_SCALING / TILES_SEEN);
+        ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / TILES_SEEN) - roomInfo.game.status[socketId].x - 0.5, ctx.canvas.height / 2 / (CANVAS_SCALING / TILES_SEEN) - roomInfo.game.status[socketId].y - 0.5);
 
         // Map
 
@@ -289,8 +291,8 @@ socket.on("updateRoom", (roomJsonData) => {
 
         //ctx.clearAll();
 
-        ctx.scale(CANVAS_SCALING / 5, CANVAS_SCALING / 5);
-        ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / 5) - roomJsonData.game.status[socketId].x - 0.5, ctx.canvas.height / 2 / (CANVAS_SCALING / 5) - roomJsonData.game.status[socketId].y - 0.5);
+        ctx.scale(CANVAS_SCALING / TILES_SEEN, CANVAS_SCALING / TILES_SEEN);
+        ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / TILES_SEEN) - roomJsonData.game.status[socketId].x - 0.5, ctx.canvas.height / 2 / (CANVAS_SCALING / TILES_SEEN) - roomJsonData.game.status[socketId].y - 0.5);
 
         // Map
 

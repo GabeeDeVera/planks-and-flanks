@@ -358,7 +358,7 @@ io.on("connection", (socket) => {
                         walls: [
                             
                         ],
-                        biomeMap: generateNoiseGrid(jsonData.mapSize, jsonData.mapSize / 10, 20)
+                        biomeMap: generateNoiseGrid(jsonData.mapSize, jsonData.mapSize / 10 + 1, 20)
                     };
 
                     jsonData.inGame.forEach(id => {
