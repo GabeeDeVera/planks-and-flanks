@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans&family=Lexend&display=swap');
+
+body, html
+{
+    font-family: 'Josefin Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+main#content
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+main#content > *
+{
+    max-width: 90vw;
+}
+
+main#content > p#errorDescription
+{
+    font-family: 'Lexend', sans-serif;
+}

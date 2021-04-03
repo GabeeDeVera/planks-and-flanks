@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/scripts/resourceLoad.js"defer ></script>
+    <script src="/scripts/room.js" defer></script>
+    <link rel="stylesheet" href="/styles/globalVariables.css">
+    <link rel="stylesheet" href="/styles/room.css">
+    <title>Room</title>
+</head>
+
+<body>
+    <div class="resources">
+        <image id="grass.png" src="/images/grass.png"></image>
+        <image id="storm.png" src="/images/storm.png"></image>
+        <image id="ammo.svg" src="/images/ammo.svg"></image>
+        <image id="gun.svg" src="/images/gun.svg"></image>
+        <image id="wood.svg" src="/images/wood.svg"></image>
+    </div>
+    <div class="window">
+        <main class="endScreen">
+            <p id="endScreenMessage1"></p>
+        </main>
+        <main class="lobby">
+            <image class="logo" style="width:20vw;" src="/images/logo.png"></image>
+            <h1 id="lobbyRoomName">New Room</h1>
+            <p id="lobbyRoomCode">Room Code</p>
+            <p id="startInfoBox">The game will start once the host presses the start button.</p>
+            <button id="startButton">Start</button>
+        </main>
+        <main class="game">
+            <section class="currentPlaying">
+                <p id="currentPlayerName">Norburn with an E</p>
+                <p class="currentPlayingText">is making a move</p>
+            </section>
+            <section class="playerInfo">
+                <table>
+                    <tr><th></th><th>Status</th></tr>
+                    <tr><td class="importantCell">HP</td><td id="hitPoints">0</td></tr>
+                    <tr><td class="importantCell">Wood</td><td id="woodAmount">0</td></tr>
+                    <tr><td class="importantCell">Ammo</td><td id="ammoAmount">0</td></tr>
+                    <tr><td class="importantCell">Gun</td><td id="hasGun">Yes</td></tr>
+                </table>
+            </section>
+            <section class="gameBoard">
+                <canvas style="background-color: #FFFFFF;" id="gameCanvas">
+
+                </canvas>
+            </section>
+        </main>
+        <main class="endScreen">
+            <p id="endScreenMessage2"></p>
+        </main>
+    </div>
+</body>
+
+</html>

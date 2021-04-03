@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/globalVariables.css"/>
+    <link rel="stylesheet" href="/styles/homePage.css"/>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/scripts/homePage.js" defer></script>
+    <title>Home</title>
+</head>
+<body>
+    <main class="content">
+        <section class="title">
+            <image class="logo" src="/images/logo.png"></image>
+        </section>
+        <section class="roomJoinForm">
+            <h1>Join Room</h1>
+            <input id="roomCode" placeholder="Room Code">
+            <input id="usernameRoomJoin" placeholder="Username">
+            <button id="roomJoinButton">Join</button>
+        </section>
+        <section class="roomCreateForm">
+            <h1>Create Room</h1>
+            <input id="usernameRoomCreate" placeholder="Username">
+            <input id="roomName" placeholder="Room Name">
+            <input id="mapSize" placeholder="Map Size (size of the grid)">
+            <button id="roomCreateButton">Create</button>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,10 @@
+:root, html
+{
+    --grayscale-color: #444444;
+    --primary-color: #00AAFF;
+    --secondary-color: #FFAA00;
+
+    --grayscale-complement-text-color: #FFFFFF;
+    --primary-complement-text-color: #000000;
+    --secondary-complement-text-color: #000000;
+}
