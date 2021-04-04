@@ -24,7 +24,7 @@ let [lobbyRoomName, lobbyRoomCode, startButton, startInfoBox, currentPlayerNameH
 console.log(playerList);
 
 /// Getting resources
-let [GRASS_TEXTURE, SAND_TEXTURE, STORM_TEXTURE, WOOD_TEXTURE, CACTUS_TEXTURE, AMMO_TEXTURE, GUN_TEXTURE] = ["grass.png", "sand.png", "storm.png", "wood.svg", "cactus.svg", "ammo.svg", "gun.svg"].map(item => getResource(item));
+let [GRASS_TEXTURE, SAND_TEXTURE, ICE_TEXTURE, STORM_TEXTURE, WOOD_TEXTURE, CACTUS_TEXTURE, AMMO_TEXTURE, GUN_TEXTURE, MEDKIT_TEXTURE] = ["grass.png", "sand.png", "ice.png", "storm.png", "wood.svg", "cactus.svg", "ammo.svg", "gun.svg", "medkit.svg"].map(item => getResource(item));
 
 /// Getting Canvas 2D Rendering Context
 const ctx = gameCanvas.getContext("2d");
@@ -49,6 +49,11 @@ ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / TILES_SEEN), ctx.canvas.h
 
 window.addEventListener("resize", (ev) => {
     if (roomInfo?.inGame?.includes(socketId || "") && roomInfo?.state === "Game") {
+        let roomJsonData = roomInfo;
+
+        // Getting Player Coordinates
+        let [posX, posY] = [roomJsonData.game.status[socketId].x, roomJsonData.game.status[socketId].y];
+
         // Draw Canvas
 
         ctx.canvas.width = 0.8 * CANVAS_SCALING * window.innerWidth / window.innerHeight;
@@ -57,138 +62,176 @@ window.addEventListener("resize", (ev) => {
         //ctx.clearAll();
 
         ctx.scale(CANVAS_SCALING / TILES_SEEN, CANVAS_SCALING / TILES_SEEN);
-        ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / TILES_SEEN) - roomInfo.game.status[socketId].x - 0.5, ctx.canvas.height / 2 / (CANVAS_SCALING / TILES_SEEN) - roomInfo.game.status[socketId].y - 0.5);
+        ctx.translate(ctx.canvas.width / 2 / (CANVAS_SCALING / TILES_SEEN) - roomJsonData.game.status[socketId].x - 0.5, ctx.canvas.height / 2 / (CANVAS_SCALING / TILES_SEEN) - roomJsonData.game.status[socketId].y - 0.5);
 
         // Map
 
         /// Ground and Items
-        for (let i = 0; i < roomInfo.mapSize; i++) {
-            for (let j = 0; j < roomInfo.mapSize; j++) {
-                currentTile = roomInfo.game.map[`${i},${j}`];
-                ctx.drawImage((roomInfo.game.biomeMap[i][j] <= 0 ? GRASS_TEXTURE : SAND_TEXTURE), i, j, 1, 1);
-                
+        for (let i = 0; i < roomJsonData.mapSize; i++) {
+            for (let j = 0; j < roomJsonData.mapSize; j++) {
+                if (i >= posX - (TILES_SEEN - 1) / 2 && i <= posX + (TILES_SEEN - 1) / 2 && j >= posY - (TILES_SEEN - 1) / 2 && j <= posY + (TILES_SEEN - 1) / 2) {
+                    currentTile = roomJsonData.game.map[`${i},${j}`];
+                    let currentBiome = (roomJsonData.game.biomeMap[i][j] >= 0.33 ? "desert" : (roomJsonData.game.biomeMap[i][j] >= -0.33 ? "plains" : "snow"));
 
-                if (currentTile.hasWood) {
-                    ctx.drawImage((roomInfo.game.biomeMap[i][j] <= 0 ? WOOD_TEXTURE : CACTUS_TEXTURE), i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
-                }
-                if (currentTile.hasAmmo) {
-                    ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                }
-                if (currentTile.hasGun) {
-                    ctx.drawImage(GUN_TEXTURE, i + 0.25, j + (1 - 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width) / 2, 0.5, 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width);
+                    switch (currentBiome) {
+                        case "desert":
+                            {
+                                ctx.drawImage(SAND_TEXTURE, i, j, 1, 1);
+                                if (currentTile.hasWood) {
+                                    ctx.drawImage(CACTUS_TEXTURE, i + 0.25, j + (1 - 0.5 * CACTUS_TEXTURE.height / CACTUS_TEXTURE.width) / 2, 0.5, 0.5 * CACTUS_TEXTURE.height / CACTUS_TEXTURE.width);
+                                }
+                                if (currentTile.hasAmmo) {
+                                    ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                                }
+                                if (currentTile.hasGun) {
+                                    ctx.drawImage(GUN_TEXTURE, i + 0.25, j + (1 - 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width) / 2, 0.5, 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width);
+                                }
+                            }
+                            break;
+                        default:
+                        case "plains":
+                            {
+                                ctx.drawImage(GRASS_TEXTURE, i, j, 1, 1);
+                                if (currentTile.hasWood) {
+                                    ctx.drawImage(WOOD_TEXTURE, i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
+                                }
+                                if (currentTile.hasAmmo) {
+                                    ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                                }
+                                if (currentTile.hasGun) {
+                                    ctx.drawImage(GUN_TEXTURE, i + 0.25, j + (1 - 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width) / 2, 0.5, 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width);
+                                }
+                            }
+                            break;
+                        case "snow":
+                            {
+                                ctx.drawImage(ICE_TEXTURE, i, j, 1, 1);
+                                if (currentTile.hasMedkit) {
+                                    ctx.drawImage(MEDKIT_TEXTURE, i + 0.15, j + (1 - 0.7 * MEDKIT_TEXTURE.height / MEDKIT_TEXTURE.width) / 2, 0.7, 0.7 * MEDKIT_TEXTURE.height / MEDKIT_TEXTURE.width);
+                                }
+                            }
+                            break
+                    }
                 }
             }
         }
 
         // Bullets
-        let bulletList = roomInfo.game.firedBullets;
+        let bulletList = roomJsonData.game.firedBullets;
         for (let i = 0; i < bulletList.length; i++) {
             let currentBullet = bulletList[i];
-            switch (currentBullet.facing) {
-                case "N":
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    break;
-                case "W":
-                    ctx.save();
-                    ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
-                    ctx.rotate(- Math.PI / 2);
-                    ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
+            if (currentBullet.x >= posX - (TILES_SEEN - 1) / 2 && currentBullet.x <= posX + (TILES_SEEN - 1) / 2 && currentBullet.y >= posY - (TILES_SEEN - 1) / 2 && currentBullet.y <= posY + (TILES_SEEN - 1) / 2) {
+                switch (currentBullet.facing) {
+                    case "N":
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        break;
+                    case "W":
+                        ctx.save();
+                        ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
+                        ctx.rotate(- Math.PI / 2);
+                        ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
 
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    ctx.restore();
-                    break;
-                case "S":
-                    ctx.save();
-                    ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
-                    ctx.rotate(Math.PI);
-                    ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
-
-
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    ctx.restore();
-                    break;
-                case "E":
-                    ctx.save();
-                    ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
-                    ctx.rotate(Math.PI / 2);
-                    ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        ctx.restore();
+                        break;
+                    case "S":
+                        ctx.save();
+                        ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
+                        ctx.rotate(Math.PI);
+                        ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
 
 
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    ctx.restore();
-                    break;
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        ctx.restore();
+                        break;
+                    case "E":
+                        ctx.save();
+                        ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
+                        ctx.rotate(Math.PI / 2);
+                        ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
+
+
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        ctx.restore();
+                        break;
+                }
             }
         }
 
-        // Players
-
-        Object.entries(roomInfo.game.status).forEach(item => {
-            // Body
-            ctx.fillStyle = (item[0] === socketId ? "rgb(20, 120, 255)" : "rgb(255, 20, 80)");
-            ctx.beginPath();
-            ctx.arc(item[1].x + 0.5, item[1].y + 0.5, 0.25, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Eyes
-            ctx.fillStyle = "black";
-            ctx.beginPath();
-            switch (item[1].facing) {
-                case "N":
-                    ctx.arc(item[1].x + 0.42, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.58, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
-                    break;
-                case "S":
-                    ctx.arc(item[1].x + 0.42, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.58, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
-                    break;
-                case "W":
-                    ctx.arc(item[1].x + 0.35, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.35, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
-                    break;
-                case "E":
-                    ctx.arc(item[1].x + 0.65, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.65, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
-                    break;
-            }
-            ctx.fill();
-
-            // Name
-            ctx.fillStyle = "black";
-            ctx.font = "0.25px 'Lexend', sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(roomInfo.usernames[item[0]], item[1].x + 0.5, item[1].y + 0.15, 1.5);
-        });
-
         // Walls
 
-        roomInfo.game.walls.forEach(item => {
-            // Each wall takes on the format [coord1x, coord1y, coord2x, coord2y]
-            // where coord1x <= coord2x and coord1y <= coord2y
-
+        roomJsonData.game.walls.forEach(item => {
             let wallCoords = JSON.parse(item);
+            if (wallCoords[2] >= posX - (TILES_SEEN - 1) / 2 && wallCoords[0] <= posX + (TILES_SEEN - 1) / 2 && wallCoords[3] >= posY - (TILES_SEEN - 1) / 2 && wallCoords[1] <= posY + (TILES_SEEN - 1) / 2) {
+                // Each wall takes on the format [coord1x, coord1y, coord2x, coord2y]
+                // where coord1x <= coord2x and coord1y <= coord2y
 
-            // Wall is horizontal
-            ctx.fillStyle = "#4E310B";
-            ctx.beginPath()
-            if (wallCoords[0] === wallCoords[2]) {
-                ctx.rect(wallCoords[0] - 0.1, wallCoords[1] + 0.9, 1.2, 0.2);
+                // Wall is horizontal
+                ctx.fillStyle = "#4E310B";
+                ctx.beginPath()
+                if (wallCoords[0] === wallCoords[2]) {
+                    ctx.rect(wallCoords[0] - 0.1, wallCoords[1] + 0.9, 1.2, 0.2);
+                }
+                else if (wallCoords[1] === wallCoords[3]) // Wall is vertical
+                {
+                    ctx.rect(wallCoords[0] + 0.9, wallCoords[1] - 0.1, 0.2, 1.2);
+                }
+                ctx.closePath();
+                ctx.fill();
             }
-            else if (wallCoords[1] === wallCoords[3]) // Wall is vertical
-            {
-                ctx.rect(wallCoords[0] + 0.9, wallCoords[1] - 0.1, 0.2, 1.2);
+        });
+
+        // Players
+
+        Object.entries(roomJsonData.game.status).forEach(item => {
+            if (item[1].x >= posX - (TILES_SEEN - 1) / 2 && item[1].x <= posX + (TILES_SEEN - 1) / 2 && item[1].y >= posY - (TILES_SEEN - 1) / 2 && item[1].y <= posY + (TILES_SEEN - 1) / 2) {
+                // Body
+                ctx.fillStyle = (item[0] === socketId ? "rgb(20, 120, 255)" : "rgb(255, 20, 80)");
+                ctx.beginPath();
+                ctx.arc(item[1].x + 0.5, item[1].y + 0.5, 0.25, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                switch (item[1].facing) {
+                    case "N":
+                        ctx.arc(item[1].x + 0.42, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.58, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
+                        break;
+                    case "S":
+                        ctx.arc(item[1].x + 0.42, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.58, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
+                        break;
+                    case "W":
+                        ctx.arc(item[1].x + 0.35, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.35, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
+                        break;
+                    case "E":
+                        ctx.arc(item[1].x + 0.65, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.65, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
+                        break;
+                }
+                ctx.fill();
+
+                // Name
+                ctx.fillStyle = "black";
+                ctx.font = "0.25px 'Lexend', sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(roomJsonData.usernames[item[0]], item[1].x + 0.5, item[1].y + 0.15);
             }
-            ctx.closePath();
-            ctx.fill();
         });
 
         // Storm
 
         ctx.globalAlpha = 0.4;
-        for (let i = 0; i < roomInfo.mapSize; i++) {
-            for (let j = 0; j < roomInfo.mapSize; j++) {
-                // If the tile is in the storm, draw storm
-                if (i < roomInfo.game.stormDistance || i >= roomInfo.mapSize - roomInfo.game.stormDistance || j < roomInfo.game.stormDistance || j >= roomInfo.mapSize - roomInfo.game.stormDistance) {
-                    ctx.drawImage(STORM_TEXTURE, i, j, 1, 1);
+        for (let i = 0; i < roomJsonData.mapSize; i++) {
+            for (let j = 0; j < roomJsonData.mapSize; j++) {
+                if (i >= posX - (TILES_SEEN - 1) / 2 && i <= posX + (TILES_SEEN - 1) / 2 && j >= posY - (TILES_SEEN - 1) / 2 && j <= posY + (TILES_SEEN - 1) / 2) {
+                    // If the tile is in the storm, draw storm
+                    if (i < roomJsonData.game.stormDistance || i >= roomJsonData.mapSize - roomJsonData.game.stormDistance || j < roomJsonData.game.stormDistance || j >= roomJsonData.mapSize - roomJsonData.game.stormDistance) {
+                        ctx.drawImage(STORM_TEXTURE, i, j, 1, 1);
+                    }
                 }
             }
         }
@@ -284,6 +327,9 @@ socket.on("updateRoom", (roomJsonData) => {
 
         console.table({ x: gameStats.x, y: gameStats.y });
 
+        // Getting Player Coordinates
+        let [posX, posY] = [roomJsonData.game.status[socketId].x, roomJsonData.game.status[socketId].y];
+
         // Draw Canvas
 
         ctx.canvas.width = 0.8 * CANVAS_SCALING * window.innerWidth / window.innerHeight;
@@ -299,18 +345,49 @@ socket.on("updateRoom", (roomJsonData) => {
         /// Ground and Items
         for (let i = 0; i < roomJsonData.mapSize; i++) {
             for (let j = 0; j < roomJsonData.mapSize; j++) {
-                currentTile = roomJsonData.game.map[`${i},${j}`];
-                ctx.drawImage((roomJsonData.game.biomeMap[i][j] <= 0 ? GRASS_TEXTURE : SAND_TEXTURE), i, j, 1, 1);
-                
+                if (i >= posX - (TILES_SEEN - 1) / 2 && i <= posX + (TILES_SEEN - 1) / 2 && j >= posY - (TILES_SEEN - 1) / 2 && j <= posY + (TILES_SEEN - 1) / 2) {
+                    currentTile = roomJsonData.game.map[`${i},${j}`];
+                    let currentBiome = (roomJsonData.game.biomeMap[i][j] >= 0.33 ? "desert" : (roomJsonData.game.biomeMap[i][j] >= -0.33 ? "plains" : "snow"));
 
-                if (currentTile.hasWood) {
-                    ctx.drawImage((roomJsonData.game.biomeMap[i][j] <= 0 ? WOOD_TEXTURE : CACTUS_TEXTURE), i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
-                }
-                if (currentTile.hasAmmo) {
-                    ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                }
-                if (currentTile.hasGun) {
-                    ctx.drawImage(GUN_TEXTURE, i + 0.25, j + (1 - 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width) / 2, 0.5, 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width);
+                    switch (currentBiome) {
+                        case "desert":
+                            {
+                                ctx.drawImage(SAND_TEXTURE, i, j, 1, 1);
+                                if (currentTile.hasWood) {
+                                    ctx.drawImage(CACTUS_TEXTURE, i + 0.25, j + (1 - 0.5 * CACTUS_TEXTURE.height / CACTUS_TEXTURE.width) / 2, 0.5, 0.5 * CACTUS_TEXTURE.height / CACTUS_TEXTURE.width);
+                                }
+                                if (currentTile.hasAmmo) {
+                                    ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                                }
+                                if (currentTile.hasGun) {
+                                    ctx.drawImage(GUN_TEXTURE, i + 0.25, j + (1 - 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width) / 2, 0.5, 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width);
+                                }
+                            }
+                            break;
+                        default:
+                        case "plains":
+                            {
+                                ctx.drawImage(GRASS_TEXTURE, i, j, 1, 1);
+                                if (currentTile.hasWood) {
+                                    ctx.drawImage(WOOD_TEXTURE, i + 0.25, j + (1 - 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width) / 2, 0.5, 0.5 * WOOD_TEXTURE.height / WOOD_TEXTURE.width);
+                                }
+                                if (currentTile.hasAmmo) {
+                                    ctx.drawImage(AMMO_TEXTURE, i + 0.45, j + (1 - 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.1, 0.1 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                                }
+                                if (currentTile.hasGun) {
+                                    ctx.drawImage(GUN_TEXTURE, i + 0.25, j + (1 - 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width) / 2, 0.5, 0.5 * GUN_TEXTURE.height / GUN_TEXTURE.width);
+                                }
+                            }
+                            break;
+                        case "snow":
+                            {
+                                ctx.drawImage(ICE_TEXTURE, i, j, 1, 1);
+                                if (currentTile.hasMedkit) {
+                                    ctx.drawImage(MEDKIT_TEXTURE, i + 0.15, j + (1 - 0.7 * MEDKIT_TEXTURE.height / MEDKIT_TEXTURE.width) / 2, 0.7, 0.7 * MEDKIT_TEXTURE.height / MEDKIT_TEXTURE.width);
+                                }
+                            }
+                            break
+                    }
                 }
             }
         }
@@ -319,101 +396,106 @@ socket.on("updateRoom", (roomJsonData) => {
         let bulletList = roomJsonData.game.firedBullets;
         for (let i = 0; i < bulletList.length; i++) {
             let currentBullet = bulletList[i];
-            switch (currentBullet.facing) {
-                case "N":
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    break;
-                case "W":
-                    ctx.save();
-                    ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
-                    ctx.rotate(- Math.PI / 2);
-                    ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
+            if (currentBullet.x >= posX - (TILES_SEEN - 1) / 2 && currentBullet.x <= posX + (TILES_SEEN - 1) / 2 && currentBullet.y >= posY - (TILES_SEEN - 1) / 2 && currentBullet.y <= posY + (TILES_SEEN - 1) / 2) {
+                switch (currentBullet.facing) {
+                    case "N":
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        break;
+                    case "W":
+                        ctx.save();
+                        ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
+                        ctx.rotate(- Math.PI / 2);
+                        ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
 
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    ctx.restore();
-                    break;
-                case "S":
-                    ctx.save();
-                    ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
-                    ctx.rotate(Math.PI);
-                    ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
-
-
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    ctx.restore();
-                    break;
-                case "E":
-                    ctx.save();
-                    ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
-                    ctx.rotate(Math.PI / 2);
-                    ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        ctx.restore();
+                        break;
+                    case "S":
+                        ctx.save();
+                        ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
+                        ctx.rotate(Math.PI);
+                        ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
 
 
-                    ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
-                    ctx.restore();
-                    break;
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        ctx.restore();
+                        break;
+                    case "E":
+                        ctx.save();
+                        ctx.translate(currentBullet.x + 0.5, currentBullet.y + 0.5);
+                        ctx.rotate(Math.PI / 2);
+                        ctx.translate(- currentBullet.x - 0.5, - currentBullet.y - 0.5);
+
+
+                        ctx.drawImage(AMMO_TEXTURE, currentBullet.x + 0.35, currentBullet.y + (1 - 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width) / 2, 0.3, 0.3 * AMMO_TEXTURE.height / AMMO_TEXTURE.width);
+                        ctx.restore();
+                        break;
+                }
             }
         }
-
-        // Players
-
-        Object.entries(roomJsonData.game.status).forEach(item => {
-            // Body
-            ctx.fillStyle = (item[0] === socketId ? "rgb(20, 120, 255)" : "rgb(255, 20, 80)");
-            ctx.beginPath();
-            ctx.arc(item[1].x + 0.5, item[1].y + 0.5, 0.25, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Eyes
-            ctx.fillStyle = "black";
-            ctx.beginPath();
-            switch (item[1].facing) {
-                case "N":
-                    ctx.arc(item[1].x + 0.42, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.58, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
-                    break;
-                case "S":
-                    ctx.arc(item[1].x + 0.42, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.58, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
-                    break;
-                case "W":
-                    ctx.arc(item[1].x + 0.35, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.35, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
-                    break;
-                case "E":
-                    ctx.arc(item[1].x + 0.65, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
-                    ctx.arc(item[1].x + 0.65, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
-                    break;
-            }
-            ctx.fill();
-
-            // Name
-            ctx.fillStyle = "black";
-            ctx.font = "0.25px 'Lexend', sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(roomJsonData.usernames[item[0]], item[1].x + 0.5, item[1].y + 0.15, 1.5);
-        });
 
         // Walls
 
         roomJsonData.game.walls.forEach(item => {
-            // Each wall takes on the format [coord1x, coord1y, coord2x, coord2y]
-            // where coord1x <= coord2x and coord1y <= coord2y
-
             let wallCoords = JSON.parse(item);
+            if (wallCoords[2] >= posX - (TILES_SEEN - 1) / 2 && wallCoords[0] <= posX + (TILES_SEEN - 1) / 2 && wallCoords[3] >= posY - (TILES_SEEN - 1) / 2 && wallCoords[1] <= posY + (TILES_SEEN - 1) / 2) {
+                // Each wall takes on the format [coord1x, coord1y, coord2x, coord2y]
+                // where coord1x <= coord2x and coord1y <= coord2y
 
-            // Wall is horizontal
-            ctx.fillStyle = "#4E310B";
-            ctx.beginPath()
-            if (wallCoords[0] === wallCoords[2]) {
-                ctx.rect(wallCoords[0] - 0.1, wallCoords[1] + 0.9, 1.2, 0.2);
+                // Wall is horizontal
+                ctx.fillStyle = "#4E310B";
+                ctx.beginPath()
+                if (wallCoords[0] === wallCoords[2]) {
+                    ctx.rect(wallCoords[0] - 0.1, wallCoords[1] + 0.9, 1.2, 0.2);
+                }
+                else if (wallCoords[1] === wallCoords[3]) // Wall is vertical
+                {
+                    ctx.rect(wallCoords[0] + 0.9, wallCoords[1] - 0.1, 0.2, 1.2);
+                }
+                ctx.closePath();
+                ctx.fill();
             }
-            else if (wallCoords[1] === wallCoords[3]) // Wall is vertical
-            {
-                ctx.rect(wallCoords[0] + 0.9, wallCoords[1] - 0.1, 0.2, 1.2);
+        });
+
+        // Players
+
+        Object.entries(roomJsonData.game.status).forEach(item => {
+            if (item[1].x >= posX - (TILES_SEEN - 1) / 2 && item[1].x <= posX + (TILES_SEEN - 1) / 2 && item[1].y >= posY - (TILES_SEEN - 1) / 2 && item[1].y <= posY + (TILES_SEEN - 1) / 2) {
+                // Body
+                ctx.fillStyle = (item[0] === socketId ? "rgb(20, 120, 255)" : "rgb(255, 20, 80)");
+                ctx.beginPath();
+                ctx.arc(item[1].x + 0.5, item[1].y + 0.5, 0.25, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                switch (item[1].facing) {
+                    case "N":
+                        ctx.arc(item[1].x + 0.42, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.58, item[1].y + 0.35, 0.03, 0, 2 * Math.PI);
+                        break;
+                    case "S":
+                        ctx.arc(item[1].x + 0.42, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.58, item[1].y + 0.65, 0.03, 0, 2 * Math.PI);
+                        break;
+                    case "W":
+                        ctx.arc(item[1].x + 0.35, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.35, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
+                        break;
+                    case "E":
+                        ctx.arc(item[1].x + 0.65, item[1].y + 0.42, 0.03, 0, 2 * Math.PI);
+                        ctx.arc(item[1].x + 0.65, item[1].y + 0.58, 0.03, 0, 2 * Math.PI);
+                        break;
+                }
+                ctx.fill();
+
+                // Name
+                ctx.fillStyle = "black";
+                ctx.font = "0.25px 'Lexend', sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(roomJsonData.usernames[item[0]], item[1].x + 0.5, item[1].y + 0.15);
             }
-            ctx.closePath();
-            ctx.fill();
         });
 
         // Storm
@@ -421,9 +503,11 @@ socket.on("updateRoom", (roomJsonData) => {
         ctx.globalAlpha = 0.4;
         for (let i = 0; i < roomJsonData.mapSize; i++) {
             for (let j = 0; j < roomJsonData.mapSize; j++) {
-                // If the tile is in the storm, draw storm
-                if (i < roomJsonData.game.stormDistance || i >= roomJsonData.mapSize - roomJsonData.game.stormDistance || j < roomJsonData.game.stormDistance || j >= roomJsonData.mapSize - roomJsonData.game.stormDistance) {
-                    ctx.drawImage(STORM_TEXTURE, i, j, 1, 1);
+                if (i >= posX - (TILES_SEEN - 1) / 2 && i <= posX + (TILES_SEEN - 1) / 2 && j >= posY - (TILES_SEEN - 1) / 2 && j <= posY + (TILES_SEEN - 1) / 2) {
+                    // If the tile is in the storm, draw storm
+                    if (i < roomJsonData.game.stormDistance || i >= roomJsonData.mapSize - roomJsonData.game.stormDistance || j < roomJsonData.game.stormDistance || j >= roomJsonData.mapSize - roomJsonData.game.stormDistance) {
+                        ctx.drawImage(STORM_TEXTURE, i, j, 1, 1);
+                    }
                 }
             }
         }

@@ -75,59 +75,48 @@ function getStormDistance(transitionMap, currentDoubleTurn) {
 
 //// Perlin Noise Generator
 
-function generateGridGradient(size, vectorValues = [[-1,-1],[-1,1],[1,-1],[1,1]])
-{
-    let gradientGrid=[];
-    for(let i = 0; i < size; i++)
-    {
+function generateGridGradient(size, vectorValues = [[-1, -1], [-1, 1], [1, -1], [1, 1]]) {
+    let gradientGrid = [];
+    for (let i = 0; i < size; i++) {
         gradientGrid.push([]);
-        for(let j = 0; j < size; j++)
-        {
-            gradientGrid[i].push(vectorValues[Math.floor(Math.random()*vectorValues.length)]);
+        for (let j = 0; j < size; j++) {
+            gradientGrid[i].push(vectorValues[Math.floor(Math.random() * vectorValues.length)]);
         }
     }
     return gradientGrid;
 }
 
-function dot(vec1, vec2)
-{
-    if(vec1.length!==vec2.length)
-    {
+function dot(vec1, vec2) {
+    if (vec1.length !== vec2.length) {
         return 0;
     }
-    else
-    {
+    else {
         let sum = 0;
-        for(let i = 0; i < vec1.length; i++)
-        {
-            sum += vec1[i]*vec2[i];
+        for (let i = 0; i < vec1.length; i++) {
+            sum += vec1[i] * vec2[i];
         }
         return sum;
     }
 }
 
-function lerp(val1, val2, midVal)
-{
+function lerp(val1, val2, midVal) {
     return (val2 - val1) * (3.0 - midVal * 2.0) * midVal * midVal + val1;
 
     //return return (val2-val1) * midVal + val1; (normal)
     //return (val2 - val1) * (3.0 - midVal * 2.0) * midVal * midVal + val1; (smooth)
 }
 
-function generateNoiseGrid(size, sizeGridGradient, sizeGridGradientScaling)
-{
+function generateNoiseGrid(size, sizeGridGradient, sizeGridGradientScaling) {
     let noiseGrid = [...new Array(size)].map(item => [...new Array(size)]);
     let gradientGrid = generateGridGradient(sizeGridGradient);
 
-    for(let y = 0; y < size; y++)
-    {
-        for(let x = 0; x < size; x++)
-        {
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
             let gridVectorIndices = [Math.floor(x / sizeGridGradientScaling), Math.floor(y / sizeGridGradientScaling)];
             let fracX = (x % sizeGridGradientScaling) / sizeGridGradientScaling;
             let fracY = (y % sizeGridGradientScaling) / sizeGridGradientScaling;
             let distanceVectors = [[gridVectorIndices[0] - x / sizeGridGradientScaling, gridVectorIndices[1] - y / sizeGridGradientScaling], [gridVectorIndices[0] + 1 - x / sizeGridGradientScaling, gridVectorIndices[1] - y / sizeGridGradientScaling], [gridVectorIndices[0] - x / sizeGridGradientScaling, gridVectorIndices[1] + 1 - y / sizeGridGradientScaling], [gridVectorIndices[0] + 1 - x / sizeGridGradientScaling, gridVectorIndices[1] + 1 - y / sizeGridGradientScaling]];
-            let dotGradients = [...new Array(4)].map((_,index) => dot(distanceVectors[index], gradientGrid[gridVectorIndices[0] + index % 2][gridVectorIndices[1] + Math.floor(index / 2)] ));
+            let dotGradients = [...new Array(4)].map((_, index) => dot(distanceVectors[index], gradientGrid[gridVectorIndices[0] + index % 2][gridVectorIndices[1] + Math.floor(index / 2)]));
             noiseGrid[x][y] = lerp(lerp(dotGradients[0], dotGradients[1], fracX), lerp(dotGradients[2], dotGradients[3], fracX), fracY)
         }
     }
@@ -356,7 +345,7 @@ io.on("connection", (socket) => {
 
                         ],
                         walls: [
-                            
+
                         ],
                         biomeMap: generateNoiseGrid(jsonData.mapSize, jsonData.mapSize / 10 + 1, 20)
                     };
@@ -395,7 +384,8 @@ io.on("connection", (socket) => {
                             jsonData.game.map[`${i},${j}`] = {
                                 hasWood: false,
                                 hasAmmo: false,
-                                hasGun: false
+                                hasGun: false,
+                                hasMedkit: false
                             };
                         }
                     }
@@ -407,8 +397,8 @@ io.on("connection", (socket) => {
                         let posX = Math.floor(Math.random() * jsonData.mapSize);
                         let posY = Math.floor(Math.random() * jsonData.mapSize);
 
-                        // If no player is on the block
-                        if (![...Object.values(jsonData.game.status)].map(item => item.x === posX && item.y === posY).reduce((acc, cur) => acc || cur, false)) {
+                        // If no player is on the block and the block is not a snow biome
+                        if (![...Object.values(jsonData.game.status)].map(item => item.x === posX && item.y === posY).reduce((acc, cur) => acc || cur, false) && jsonData.game.biomeMap[posX][posY] >= -0.33) {
                             jsonData.game.map[`${posX},${posY}`].hasGun = true;
                         }
                         else {
@@ -423,26 +413,80 @@ io.on("connection", (socket) => {
                             if (!(jsonData.game.map[`${i},${j}`].hasGun)) {
                                 // If no player is on the block
                                 if (![...Object.values(jsonData.game.status)].map(item => item.x === i && item.y === j).reduce((acc, cur) => acc || cur, false)) {
-                                    // This determines if something will spawn on this block
-                                    if (Math.random() < 0.5) {
+                                    // Getting current biome
+                                    let currentBiome = (jsonData.game.biomeMap[i][j] >= 0.33 ? "desert" : (jsonData.game.biomeMap[i][j] >= -0.33 ? "plains" : "snow"));
 
-                                        // This determines the thing that will spawn on the block
-                                        if (Math.random() < 0.5) {
-                                            // Place Ammo
-                                            jsonData.game.map[`${i},${j}`] = {
-                                                hasWood: false,
-                                                hasAmmo: true,
-                                                hasGun: false
-                                            };
-                                        }
-                                        else {
-                                            // Place Wood
-                                            jsonData.game.map[`${i},${j}`] = {
-                                                hasWood: true,
-                                                hasAmmo: false,
-                                                hasGun: false
-                                            };
-                                        }
+                                    switch (currentBiome) {
+                                        case "desert":
+                                            {
+                                                // This determines if something will spawn on this block
+                                                if (Math.random() < 0.6) {
+
+                                                    // This determines the thing that will spawn on the block
+                                                    if (Math.random() < 0.67) {
+                                                        // Place Ammo
+                                                        jsonData.game.map[`${i},${j}`] = {
+                                                            hasWood: false,
+                                                            hasAmmo: true,
+                                                            hasGun: false,
+                                                            hasMedkit: false
+                                                        };
+                                                    }
+                                                    else {
+                                                        // Place Wood
+                                                        jsonData.game.map[`${i},${j}`] = {
+                                                            hasWood: true,
+                                                            hasAmmo: false,
+                                                            hasGun: false,
+                                                            hasMedkit: false
+                                                        };
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        default:
+                                        case "plains":
+                                            {
+                                                // This determines if something will spawn on this block
+                                                if (Math.random() < 0.3) {
+
+                                                    // This determines the thing that will spawn on the block
+                                                    if (Math.random() < 0.5) {
+                                                        // Place Ammo
+                                                        jsonData.game.map[`${i},${j}`] = {
+                                                            hasWood: false,
+                                                            hasAmmo: true,
+                                                            hasGun: false,
+                                                            hasMedkit: false
+                                                        };
+                                                    }
+                                                    else {
+                                                        // Place Wood
+                                                        jsonData.game.map[`${i},${j}`] = {
+                                                            hasWood: true,
+                                                            hasAmmo: false,
+                                                            hasGun: false,
+                                                            hasMedkit: false
+                                                        };
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case "snow":
+                                            {
+                                                // This determines if something will spawn on this block
+                                                if (Math.random() < 0.2) {
+
+                                                    // Place Medkit
+                                                    jsonData.game.map[`${i},${j}`] = {
+                                                        hasWood: false,
+                                                        hasAmmo: false,
+                                                        hasGun: false,
+                                                        hasMedkit: true
+                                                    };
+                                                }
+                                            }
+                                            break;
                                     }
                                 }
                                 else {
@@ -450,7 +494,8 @@ io.on("connection", (socket) => {
                                     jsonData.game.map[`${i},${j}`] = {
                                         hasWood: false,
                                         hasAmmo: false,
-                                        hasGun: false
+                                        hasGun: false,
+                                        hasMedkit: false
                                     };
                                 }
                             }
@@ -500,8 +545,7 @@ io.on("connection", (socket) => {
 
                 // If the user who requests to move is the current player, and there is no wall obstructing the player's movement, allow the player to move
                 console.log(`${socket.id} - ${jsonData.game.currentPlayer}`);
-                if (socket.id === jsonData.game.currentPlayer && (posX < jsonData.mapSize && posX >= 0) && (posY < jsonData.mapSize && posY >= 0) && Object.values(jsonData.game.status).filter(item => item.x === posX && item.y === posY).length === 0 && (!jsonData.game.walls.includes(JSON.stringify([oldX, oldY, posX, posY])) && !jsonData.game.walls.includes(JSON.stringify([posX, posY, oldX, oldY]))))
-                {
+                if (socket.id === jsonData.game.currentPlayer && (posX < jsonData.mapSize && posX >= 0) && (posY < jsonData.mapSize && posY >= 0) && Object.values(jsonData.game.status).filter(item => item.x === posX && item.y === posY).length === 0 && (!jsonData.game.walls.includes(JSON.stringify([oldX, oldY, posX, posY])) && !jsonData.game.walls.includes(JSON.stringify([posX, posY, oldX, oldY])))) {
                     // Move User
                     console.log(`pos{${posX}, ${posY}}`);
                     jsonData.game.status[socket.id].x = posX;
@@ -524,6 +568,18 @@ io.on("connection", (socket) => {
                     if (jsonData.game.map[`${posX},${posY}`].hasGun && !jsonData.game.status[socket.id].gun) {
                         jsonData.game.status[socket.id].gun = true;
                         jsonData.game.map[`${posX},${posY}`].hasGun = false;
+                    }
+
+                    // There is a medkit on the new square, let the player obtain the medkit
+                    if (jsonData.game.map[`${posX},${posY}`].hasMedkit) {
+                        jsonData.game.status[socket.id].hp++;
+                        jsonData.game.map[`${posX},${posY}`].hasMedkit = false;
+                    }
+
+                    // Check if the player moved over a desert biome tile and damage them (5% chance) if they did
+                    if(jsonData.game.biomeMap[posX][posY] >= 0.33 && Math.random() <= 0.05)
+                    {
+                        jsonData.game.status[socket.id].hp--;
                     }
 
                     // Check if the player moved over a bullet and inflict damage upon them if they have (delete bullet(s) that have hit the player)
@@ -980,19 +1036,16 @@ io.on("connection", (socket) => {
     });
 
     socket.on("build", (posX1, posY1, posX2, posY2) => {
-        readFile(`rooms/${socket.roomCode}.json`, {encoding: "utf-8"}, (err, data) => {
-            if(err || ![...data].toString().trim())
-            {
+        readFile(`rooms/${socket.roomCode}.json`, { encoding: "utf-8" }, (err, data) => {
+            if (err || ![...data].toString().trim()) {
                 console.log("build error");
             }
-            else
-            {
+            else {
                 let jsonData = JSON.parse(data);
 
                 console.log(`${socket.id} requests to build`);
                 // If the player requesting to build is the current player moving, there is no wall in the area that the player requests to build in, the area that the player requests to build in is valid (i.e. not the edge of the map), and the player has wood, make a wall
-                if (socket.id === jsonData.game.currentPlayer && !jsonData.game.walls.includes(JSON.stringify([posX1, posY1, posX2, posY2])) && posX1 >= 0 && posY1 >= 0 && posX2 < jsonData.mapSize && posY2 < jsonData.mapSize && jsonData.game.status[socket.id].wood > 0)
-                {
+                if (socket.id === jsonData.game.currentPlayer && !jsonData.game.walls.includes(JSON.stringify([posX1, posY1, posX2, posY2])) && posX1 >= 0 && posY1 >= 0 && posX2 < jsonData.mapSize && posY2 < jsonData.mapSize && jsonData.game.status[socket.id].wood > 0) {
                     // Build the wall
                     jsonData.game.walls.push(JSON.stringify([posX1, posY1, posX2, posY2]));
 
