@@ -83,7 +83,7 @@ section.roomInfo > *
     max-width: 70vw;
 }
 
-section.roomInfo > image.logo
+section.roomInfo > img.logo
 {
     width: 10vh;
     height: 10vh;

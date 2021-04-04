@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans&family=Lexend&display=swap');
+
+body, html
+{
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items:stretch;
+    min-height: 100vh;
+}
+
+main.content
+{
+    padding: 2vw;
+}
+
+main.content > h1
+{
+    font-family: 'Josefin Sans', sans-serif ;
+    font-weight: bolder;
+    font-size: 5vw;
+    text-align: center;
+    border-bottom: 0.2vw dashed black ;
+}
+
+.bold
+{
+    font-weight: bold;
+    font-family: inherit;
+}
+
+.italic
+{
+    font-style: italic;
+    font-family: inherit;
+}
+
+p.infoBox
+{
+    margin: 1vw;
+    padding: 1vw;
+    background-color: var(--primary-color);
+    color: var(--primary-complement-text-color);
+    border-radius: 0.3vw;
+    border: 0.4vw solid black;
+}
+
+p.infoBox::before
+{
+    content: "!";
+    font-size: 6vw;
+    float: left;
+    font-weight: bolder;
+    margin-right: 1vw;
+}
+p.footnote
+{
+    margin: 1vw;
+    padding: 1vw;
+    background-color: var(--secondary-color);
+    color: var(--secondary-complement-text-color);
+    border-radius: 0.3vw;
+    border: 0.4vw solid black;
+}
+
+p.footnote::before
+{
+    content: "?";
+    font-size: 6vw;
+    float: left;
+    font-weight: bolder;
+    margin-right: 1vw;
+}
+
+section > table
+{
+    border: 0.2vw solid black;
+    border-collapse: collapse;
+    margin: 1vw;
+}
+th, td
+{
+    border: 0.2vw solid black;
+    font-size: 3vw;
+    padding: 1vw;
+}
+
+th
+{
+    border-bottom: 0.4vw solid black;
+    font-weight: bold;
+    font-family: 'Josefin Sans', sans-serif;
+}
+
+td
+{
+    font-family: 'Lexend', sans-serif;
+}
+
+section > section
+{
+    margin-left: 2vw;
+    margin-top: 1vw;
+}
+
+section > h1, section > h2, section > h3, section > h4, section > h5, section > h6
+{
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: bold;
+    font-size: 4vw;
+}
+
+section > p
+{
+    font-family: 'Lexend', sans-serif;
+    font-size: 3vw;
+}
+
+img
+{
+    padding: 0.5vw;
+}
+img.floatLeft
+{
+    float: left;
+    padding: 0vw 0.5vw 0vw 0vw;
+}
+
+img.floatRight
+{
+    float: right;
+    padding: 0vw 0vw 0vw 0.5vw;
+}
+
+nav
+{
+    background-color: #EEEEEE;
+    background-clip: content-box;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+nav > a
+{
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 2vw;
+    color: black;
+    margin: 2vw;
+}

@@ -1,10 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans&family=Lexend&display=swap');
 
+@keyframes moveFromTop
+{
+    from {
+        opacity: 0;
+        bottom: 100vh;
+    }
+    to {
+        opacity: 1;
+        bottom: 0vh;
+    }
+}
+
+@keyframes moveFromBottom
+{
+    from {
+        opacity: 0;
+        top: 100vh; 
+    }
+    33% {
+        opacity: 0;
+        top: 100vh;
+    }
+    to {
+        opacity: 1;
+        top: 0vh;
+    }
+}
+
+
 body, html
 {
     font-family: 'Josefin Sans', sans-serif;
     margin: 0;
     padding: 0;
+    overflow: hidden;
 }
 
 main#content
@@ -20,9 +50,17 @@ main#content
 main#content > *
 {
     max-width: 90vw;
+    position: relative;
+}
+
+main#content > h1#errorHeader
+{
+    animation: moveFromTop 2s ease-out 0s 1;
+    font-family: 'Lexend', sans-serif;
 }
 
 main#content > p#errorDescription
 {
+    animation: moveFromBottom 3s ease-out 0s 1;
     font-family: 'Lexend', sans-serif;
 }

@@ -197,6 +197,19 @@ app.get("/images/:fileName", (req, res) => {
     res.sendFile(`images/${req.params.fileName}`, { ...OPTIONS, "content-type": `image/${req.params.fileName.split(".")[1]}` });
 });
 
+app.get("/survivorsGuide/:page", (req, res) => {
+    res.sendFile(`docs/survivorsGuide${req.params.page}.html`, { ...OPTIONS, "content-type": "text/html" });
+})
+
+// Error handling middleware. MAKE SURE THAT THIS IS LAST OR ELSE IT WILL NOT WORK.
+
+app.use((err, req, res, next) => {
+    if(err.code === "ENOENT")
+    {
+        res.redirect("/error/1");
+    }
+})
+
 // Creating HTTP Server
 const http = require("http");
 const httpServer = http.createServer(app);

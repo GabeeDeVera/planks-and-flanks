@@ -41,7 +41,7 @@ main.content > section.title
     /*background-color: var(--grayscale-color);*/
     color: var(--grayscale-complement-text-color);
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
@@ -50,9 +50,22 @@ main.content > section.title > *
 {
     max-height: 35vh;
 }
+
 main.content > section.title > image.logo
 {
     background: transparent;
+}
+
+main.content > section.title > p#survivorsGuide
+{
+    font-family: 'Lexend', sans-serif ;
+    color: black;
+    font-size: 1vw;
+}
+
+p#survivorsGuide > a
+{
+    color: black;
 }
 
 
