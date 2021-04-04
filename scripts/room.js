@@ -7,7 +7,12 @@ const socket = io("/");
 let socketId;
 
 /// Get username
-let username = localStorage.getItem("username") || "Player";
+if(!localStorage.getItem("username"))
+{
+    // User does not have a username, ask for one
+    localStorage.setItem("username", prompt("Hello! Please enter a username."));
+}
+let username = localStorage.getItem("username");
 localStorage.setItem("username", username);
 
 /// Getting room code
