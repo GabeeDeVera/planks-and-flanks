@@ -47,7 +47,7 @@ roomJoinButton.addEventListener("click", _=>{
 
 roomCreateButton.addEventListener("click", _=>{
     // Clip Map Size
-    if( +mapSize.value < 10 )
+    if( isNaN(mapSize.value) || +mapSize.value < 10)
     {
         mapSize.value = 10;
     }
@@ -63,7 +63,7 @@ roomCreateButton.addEventListener("click", _=>{
 
 // Make mapSize at least 10 and at most 100
 mapSize.addEventListener("change", (ev) => {
-    if( +mapSize.value < 10 )
+    if( isNaN(mapSize.value) || +mapSize.value < 10 )
     {
         mapSize.value = 10;
     }
