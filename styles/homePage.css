@@ -51,7 +51,7 @@ main.content > section.title > *
     max-height: 35vh;
 }
 
-main.content > section.title > image.logo
+main.content > section.title > imgs.logo
 {
     background: transparent;
 }

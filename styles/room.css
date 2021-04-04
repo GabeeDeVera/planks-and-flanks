@@ -85,8 +85,8 @@ section.roomInfo > *
 
 section.roomInfo > img.logo
 {
-    width: 10vh;
-    height: 10vh;
+    width: 15vw;
+    height: 15vw;
 }
 
 section.roomInfo > h1#lobbyRoomName
