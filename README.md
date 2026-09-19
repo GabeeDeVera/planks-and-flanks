@@ -1,3 +1,31 @@
+# Introduction
+Planks and Flanks is a roguelike multiplayer shooting game inspired by Fortnite. You control a character to obtain resources to survive the storm.
+
+The code was written in Node.JS and was written over a week.
+
+Credits to my sister for designing the assets!
+
+What follows below is a guide to the game I wrote in 2022. As a disclaimer, I asked Gemini to combine the contents from the relevant HTML files and reformat them into markdown while preserving the exact content.
+
+## Running the Game
+
+Unfortunately, the original app has since been removed from the Heroku website following the closure of Heroku's free tier.
+
+To run the game, you need to have `npm` and `node` installed. Install them [here](https://nodejs.org/en).
+
+Clone the repository to your computer with `git clone https://github.com/GabeeDeVera/planks-and-flanks.git`. Then cd into the generated directory with `cd planks-and-flanks`.
+
+Then, execute:
+1. `npm init`
+2. `node server.js`
+
+In the console, you should see a localhost link printed.
+
+You may join that link in multiple tabs. Each tab is a separate player.
+
+I believe it is possible to temporarily run the server from your computer and have other players join using port forwarding. Better yet, if you have your own server, you may run this program on that server.
+
+---
 # The Survivors' Guide
 
 ## Introduction
