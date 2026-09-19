@@ -5,8 +5,6 @@ The code was written in Node.JS and was written over a week.
 
 Credits to my sister for designing the assets!
 
-What follows below is a guide to the game I wrote in 2022. As a disclaimer, I asked Gemini to combine the contents from the relevant HTML files and reformat them into markdown while preserving the exact content.
-
 ## Running the Game
 
 Unfortunately, the original app has since been removed from the Heroku website following the closure of Heroku's free tier.
@@ -24,6 +22,10 @@ In the console, you should see a localhost link printed.
 You may join that link in multiple tabs. Each tab is a separate player.
 
 I believe it is possible to temporarily run the server from your computer and have other players join using port forwarding. Better yet, if you have your own server, you may run this program on that server.
+
+## Introduction to the Survivors' Guide
+
+What follows below is a guide to the game I wrote in 2022. As a disclaimer, I asked Gemini to combine the contents from the relevant HTML files and reformat them into markdown while preserving the exact content.
 
 ---
 # The Survivors' Guide
